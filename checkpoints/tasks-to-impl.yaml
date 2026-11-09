@@ -1,0 +1,141 @@
+metadata:
+  generated: "2026-11-08"
+  source_tasks: "User-approved implementation derived from .github/plan-architecture.md; no separate task breakdown was provided"
+  last_updated: "2026-11-08"
+
+summary:
+  total_tasks: 3
+  completed_tasks: 3
+  in_progress_tasks: 0
+  pending_tasks: 0
+  completion_percentage: 100.0
+
+tasks:
+  - task_id: "T001"
+    description: "Implement the Spring Boot Google OIDC session backend and protected user API"
+    status: "completed"
+    implementation:
+      files_changed:
+        - file: "backend/pom.xml"
+          changes:
+            - change_type: "added"
+              description: "Add Spring Boot web, security, and OAuth2 client dependencies"
+        - file: "backend/src/main/java/com/example/oidc/"
+          changes:
+            - change_type: "added"
+              description: "Add application bootstrap, OIDC security, CSRF, logout, and current-user endpoints"
+        - file: "backend/src/main/resources/application.yml"
+          changes:
+            - change_type: "added"
+              description: "Configure Google OIDC using server-side environment variables"
+        - file: "backend/src/test/java/com/example/oidc/auth/UserControllerTest.java"
+          changes:
+            - change_type: "added"
+              description: "Cover authentication enforcement, OIDC claims, and CSRF response"
+    verification:
+      build_passed: true
+      test_results:
+        command: "mvn -B test (Java 21)"
+        passed: 3
+        failed: 0
+        skipped: 0
+        failures: []
+      notes: "Runtime probes returned 200 for /api/csrf, 401 for unauthenticated /api/me, and 204 for CSRF-protected logout."
+    upstream_trace:
+      plan_item: "Google OIDC configuration, Spring Security, /api/me, session-oriented BFF, and security concepts"
+      requirements:
+        - "Keep the Google client secret server-side"
+        - "Use the OIDC subject as the stable account identifier"
+        - "Use a server-side session and protect API requests"
+      full_trace: ".github/plan-architecture.md -> T001 -> backend Spring Security/OIDC endpoints -> Maven tests and HTTP probes"
+
+  - task_id: "T002"
+    description: "Implement a React sign-in, session status, and sign-out interface"
+    status: "completed"
+    implementation:
+      files_changed:
+        - file: "frontend/"
+          changes:
+            - change_type: "added"
+              description: "Add the Vite/React app, typed API client, sign-in state UI, CSRF-aware logout, and API tests"
+    verification:
+      build_passed: true
+      test_results:
+        command: "npm test; npm run build"
+        passed: 5
+        failed: 0
+        skipped: 0
+        failures: []
+      notes: "npm audit reported 0 vulnerabilities; browser smoke test displayed the signed-out state."
+    upstream_trace:
+      plan_item: "React login button and Spring Security authorization redirect"
+      requirements:
+        - "Redirect the browser to the backend OAuth authorization endpoint"
+        - "Do not collect Google credentials or store provider tokens in the UI"
+      full_trace: ".github/plan-architecture.md -> T002 -> frontend session UI -> Vitest, production build, and browser smoke test"
+
+  - task_id: "T003"
+    description: "Document local setup and add project ignore rules"
+    status: "completed"
+    implementation:
+      files_changed:
+        - file: "README.md"
+          changes:
+            - change_type: "added"
+              description: "Document prerequisites, Google redirect URI, local run steps, API, and production settings"
+        - file: ".gitignore"
+          changes:
+            - change_type: "added"
+              description: "Ignore Java, Node, build, environment, and compiler artifacts"
+    verification:
+      build_passed: true
+      test_results:
+        command: "Documentation and ignore rules reviewed"
+        passed: 0
+        failed: 0
+        skipped: 0
+        failures: []
+      notes: "No documentation-specific test suite is configured."
+    upstream_trace:
+      plan_item: "Google client setup, environment-based secret configuration, and production architecture"
+      requirements:
+        - "Document safe handling of Google OAuth credentials"
+      full_trace: ".github/plan-architecture.md -> T003 -> README.md and .gitignore"
+
+pending_tasks: []
+untracked_changes: []
+
+traceability_chain:
+  - chain_id: "TRACE-001"
+    requirement: "Server-side OIDC login and protected /api/me"
+    plan_phase: ".github/plan-architecture.md sections 3-13"
+    tasks: ["T001"]
+    files:
+      - "backend/pom.xml"
+      - "backend/src/main/java/com/example/oidc/config/SecurityConfig.java"
+      - "backend/src/main/java/com/example/oidc/auth/UserController.java"
+    status: "complete"
+  - chain_id: "TRACE-002"
+    requirement: "React browser sign-in and session status"
+    plan_phase: ".github/plan-architecture.md sections 6-7 and 11"
+    tasks: ["T002"]
+    files:
+      - "frontend/src/App.tsx"
+      - "frontend/src/api.ts"
+    status: "complete"
+  - chain_id: "TRACE-003"
+    requirement: "Safe, documented local and production configuration"
+    plan_phase: ".github/plan-architecture.md sections 2, 4, and 12"
+    tasks: ["T003"]
+    files:
+      - "README.md"
+      - ".gitignore"
+    status: "complete"
+
+validation:
+  passed: true
+  errors: []
+  warnings:
+    - "The implementation scope was confirmed from the architecture document because no formal feature spec or task breakdown was present."
+    - "A real Google login was not completed; configure valid Google client credentials to exercise the external provider flow."
+  blocking_issues: []
