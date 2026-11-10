@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend/auth-svc
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Set GOOGLE_CLIENT_ID in .env or your shell}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?Set GOOGLE_CLIENT_SECRET in .env or your shell}
+      APP_FRONTEND_URL: http://localhost:5173
+      DEV_DATABASE_URL: jdbc:h2:file:/app/data/oidc
+      DEV_DATABASE_PASSWORD: ${DEV_DATABASE_PASSWORD:-}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - backend-data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend/web
+      target: dev
+    environment:
+      BACKEND_PROXY_URL: http://backend:8080
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./frontend/web/src:/app/src:ro
+      - ./frontend/web/index.html:/app/index.html:ro
+    depends_on:
+      - backend
+
+volumes:
+  backend-data:
